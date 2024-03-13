@@ -1,0 +1,32 @@
+/* General styles */
+label {
+  color: white;
+  padding-bottom: 20px;
+}
+
+input {
+  margin-bottom: 25px;
+}
+
+/* Container styles */
+.container {
+  padding: 50px;
+  margin-top: 50px;
+  border-radius: 20px;
+  background-image: linear-gradient(
+    to right top,
+    #051937,
+    #004d7a,
+    #008793,
+    #00bf72,
+    #a8eb12
+  );
+}
+
+/* Result Display Area styles */
+#validationResult {
+  color: white;
+  margin-top: 40px;
+  float: right;
+  font-size: large;
+}
