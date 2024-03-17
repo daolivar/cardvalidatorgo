@@ -11,9 +11,11 @@ type CardIssuer string
 
 // Constants representing card issuers
 const (
-	Visa            CardIssuer = "Visa"
-	Mastercard      CardIssuer = "Mastercard"
 	AmericanExpress CardIssuer = "American Express"
+	Discover        CardIssuer = "Discover"
+	Mastercard      CardIssuer = "Mastercard"
+	Visa            CardIssuer = "Visa"
+	Unknown         CardIssuer = "Unknown"
 	// Add more card networks as needed
 )
 
@@ -57,9 +59,35 @@ func removeNonNumeric(s string) string {
 
 // getCardIssuer identifies the card issuer based on the card number prefix
 func getCardIssuer(cardNumber string) CardIssuer {
-	_ = cardNumber
-	// Implement get card issuer
-	return CardIssuer("unknown")
+	// Extract the first character of the card number to identify the prefix
+	prefix := cardNumber[:1]
+
+	// Check the prefix to determine the card issuer
+	switch prefix {
+	// American Express starts with '3' and has a second digit of '4' or '7'
+	case "3":
+		if cardNumber[1] == '4' || cardNumber[1] == '7' {
+			return AmericanExpress
+		}
+	// Visa starts with '4' and has a length of either 13 or 16 digits
+	case "4":
+		if len(cardNumber) == 13 || len(cardNumber) == 16 {
+			return Visa
+		}
+	// Mastercard starts with '5' and the second digit is between '1' and '5' (inclusive)
+	case "5":
+		if cardNumber[1] >= '1' && cardNumber[1] <= '5' {
+			return Mastercard
+		}
+	// Discover starts with '6', and the second digit is '5', or the first four digits are '6011'
+	case "6":
+		if cardNumber[1] == '5' || cardNumber[:4] == "6011" {
+			return Discover
+		}
+	}
+
+	// If the prefix does not match known patterns, return "Unknown"
+	return Unknown
 }
 
 // Handler handles incoming HTTP requests.
