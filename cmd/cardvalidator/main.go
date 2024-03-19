@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -18,6 +19,18 @@ const (
 	Unknown         CardIssuer = "Unknown"
 	// Add more card networks as needed
 )
+
+// CardValidationRequest defines the structure of the JSON request
+type CardValidationRequest struct {
+	CardNumber string `json:"cardnumber"`
+}
+
+// CardValidationResponse defines the structure of the JSON response
+type CardValidationResponse struct {
+	Valid  bool       `json:"valid"`
+	Issuer CardIssuer `json:"issuer"`
+	Error  string     `json:"error,omitempty"`
+}
 
 // isValidLuhn checks if a given credit card number passes the Luhn algorithm
 func isValidLuhn(cardNumber string) bool {
@@ -90,12 +103,52 @@ func getCardIssuer(cardNumber string) CardIssuer {
 	return Unknown
 }
 
-// Handler handles incoming HTTP requests.
+// handler handles incoming HTTP requests.
 func handler(w http.ResponseWriter, r *http.Request) {
-	// Implement handler logic
-	fmt.Fprintf(w, "Hello, World!")
+	// Check if the request method is POST
+	if r.Method != http.MethodPost {
+		// If not POST, return "Method not allowed" error
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Decode the request body into CardValidationRequest struct
+	var request CardValidationRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Error decoding JSON data", http.StatusBadRequest)
+		return
+	}
+
+	// Extract the card number from the decoded struct
+	cardNumber := request.CardNumber
+
+	// Validate the card number using the Luhn algorithm
+	isValid := isValidLuhn(cardNumber)
+
+	// Get the card issuer based on the card number prefix
+	issuer := getCardIssuer(cardNumber)
+
+	// Prepare the response object
+	response := CardValidationResponse{
+		Valid:  isValid,
+		Issuer: issuer,
+	}
+
+	// Set the content type header to indicate JSON response
+	w.Header().Set("Content-Type", "application/json")
+
+	// Encode the response object to JSON and write it as the response
+	json.NewEncoder(w).Encode(response)
 }
 
 func main() {
-	fmt.Printf("%t %v\n", isValidLuhn(""), getCardIssuer(""))
+	// Register a handler for the /validate endpoint
+	http.HandleFunc("/validate", handler)
+
+	// Start the server and listen for incoming connections
+	log.Println("Server is listening on port 8080...")
+
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
