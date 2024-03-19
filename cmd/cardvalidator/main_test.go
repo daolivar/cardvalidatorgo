@@ -1,6 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -104,5 +108,44 @@ func TestGetCardIssuer(t *testing.T) {
 
 	if result != expected {
 		t.Errorf("Expected %v, but got %v", expected, result)
+	}
+}
+
+func TestHandler(t *testing.T) {
+	// Create a request body with a valid card number
+	requestBody := []byte(`{"cardnumber": "4111111111111111"}`)
+
+	// Create a new HTTP request with the request body
+	req, err := http.NewRequest("POST", "/validate", bytes.NewBuffer(requestBody))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	// Create a response recorder to record the response from the handler
+	rr := httptest.NewRecorder()
+
+	// Call the handler function with the mock request and response recorder
+	handler(rr, req)
+
+	// Check the HTTP status code of the response
+	if rr.Code != http.StatusOK {
+		t.Errorf("Handler returned unexpected status code: got %v, want %v", rr.Code, http.StatusOK)
+	}
+
+	// Decode the response body to get the validation result
+	var response CardValidationResponse
+	err = json.NewDecoder(rr.Body).Decode(&response)
+	if err != nil {
+		t.Fatalf("Failed to decode response body: %v", err)
+	}
+
+	// Check the validation result
+	if !response.Valid {
+		t.Errorf("Unexpected validation result: got %v, want true", response.Valid)
+	}
+
+	// Check the issuer result
+	if response.Issuer != "Visa" {
+		t.Errorf("Unexpected issuer result: got %s, want Visa", response.Issuer)
 	}
 }
