@@ -67,7 +67,7 @@ func TestIsValidLuhn(t *testing.T) {
 func TestGetCardIssuer(t *testing.T) {
 	// Test Case 1: Visa card number
 	cardNumber := "4111111111111111"
-	result := getCardIssuer(cardNumber)
+	result := getCardIssuer(cardNumber, true)
 	expected := Visa
 
 	if result != expected {
@@ -76,7 +76,7 @@ func TestGetCardIssuer(t *testing.T) {
 
 	// Test Case 2: Mastercard card number
 	cardNumber = "5555555555554444"
-	result = getCardIssuer(cardNumber)
+	result = getCardIssuer(cardNumber, true)
 	expected = Mastercard
 
 	if result != expected {
@@ -85,7 +85,7 @@ func TestGetCardIssuer(t *testing.T) {
 
 	// Test Case 3: American Express card number
 	cardNumber = "378282246310005"
-	result = getCardIssuer(cardNumber)
+	result = getCardIssuer(cardNumber, true)
 	expected = AmericanExpress
 
 	if result != expected {
@@ -94,7 +94,7 @@ func TestGetCardIssuer(t *testing.T) {
 
 	// Test Case 4: Discover card number
 	cardNumber = "6534567890123452"
-	result = getCardIssuer(cardNumber)
+	result = getCardIssuer(cardNumber, true)
 	expected = Discover
 
 	if result != expected {
@@ -103,8 +103,17 @@ func TestGetCardIssuer(t *testing.T) {
 
 	// Test Case 5: Discover card number 2
 	cardNumber = "6011000000000004"
-	result = getCardIssuer(cardNumber)
+	result = getCardIssuer(cardNumber, true)
 	expected = Discover
+
+	if result != expected {
+		t.Errorf("Expected %v, but got %v", expected, result)
+	}
+
+	// Test Case 6: Invalid card number
+	cardNumber = "4111111111111112"
+	result = getCardIssuer(cardNumber, false)
+	expected = Unknown
 
 	if result != expected {
 		t.Errorf("Expected %v, but got %v", expected, result)
